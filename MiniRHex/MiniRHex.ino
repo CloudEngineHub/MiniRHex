@@ -97,6 +97,17 @@ void jump() {
   }
 }
 
+void reset() {
+  for (int i=1; i<=legs_active; i++) {
+    dxl.reboot(legs[i].id);
+  }
+  delay(200);
+  for (int i=1; i<=legs_active; i++) {
+    dxl.setOperatingMode(legs[i].id, OP_VELOCITY);
+    dxl.torqueOn(legs[i].id);
+  }
+}
+
 int count = 0;
 int t = 0;
 void loop() {
@@ -181,6 +192,9 @@ void loop() {
         break;
       case 'j': // jump
         jump();
+        break;
+      case 'z': // reboot motors
+        reset();
         break;
     }
 

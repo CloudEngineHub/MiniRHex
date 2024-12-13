@@ -92,16 +92,25 @@ void display_website(WiFiClient client) {
   client.println("HTTP/1.1 200 OK");
   client.println("Content-type:text/html");
   client.println();
+  client.print("<!doctype html>");
 
   // Controls
-  client.print("<div style=\"display:inline-grid; grid-template-columns: 70px 70px 70px; grid-template-rows: 70px 70px 70px 70px;\">");
-  client.print("<b></b><button onclick=\"window.location.href='/r';\">Run<br>(r)</button><b></b>");
-  client.print("<b></b><button onclick=\"window.location.href='/w';\">Forward<br>(w)</button><b></b>");
+  client.print("<div class=buttons>");
+  client.print("<b></b><button onclick=\"window.location.href='/r';\">Run<br>(r)</button>");
+  client.print("<b></b><button onclick=\"window.location.href='/z';\">Reboot<br>(z)</button>");
+  client.print("<b></b><button onclick=\"window.location.href='/w';\">Forward<br>(w)</button><b></b><b></b>");
   client.print("<button onclick=\"window.location.href='/a';\">Left<br>(a)</button>");
-  client.print("<button onclick=\"window.location.href='/q';\">Stop<br>(space/q)</button>");
-  client.print("<button onclick=\"window.location.href='/d';\">Right<br>(d)</button>");
-  client.print("<b></b><button onclick=\"window.location.href='/s';\">Reverse<br>(s)</button>");
-  client.print("</div><br><br>");
+  client.print("<button onclick=\"window.location.href='/q';\">Stop<br>(space)</button>");
+  client.print("<button onclick=\"window.location.href='/d';\">Right<br>(d)</button><b></b>");
+  client.print("<b></b><button onclick=\"window.location.href='/s';\">Reverse<br>(s)</button><b></b><b></b></div>");
+
+  // Style
+  client.print("<style>");
+  client.print(".buttons {display:inline-grid; grid-template-columns: 25% 25% 25% 25%; grid-template-rows: 25% 25% 25% 25%; width: 400px; height: 400px;}");
+  client.print("button {font-size: 12pt; border-width: 4px;}");
+  client.print("@media (max-aspect-ratio: 1) {.buttons {width: 90vw; height: 90vw; padding: 5vw;}");
+  client.print("button {font-size: 4vw; border-width: 0.5vw;}}");
+  client.print("</style>");
 
   // Key listener
   client.print("<script>");
