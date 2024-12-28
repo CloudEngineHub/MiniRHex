@@ -64,46 +64,50 @@
 
     <p><img src="Images/shieldSolderConnectorFull.jpg" width="50%"></p>
 
-5. Mount the Arduino shield to the robot body.
-    * You will needs 4 short screws. The screws will tap directly into the motor's plastic, so do not over tighten them.
+5. Replace the 2-pin power select jumper on the Arduino shield with the 3-pin shunt connector.
+
+    <p><img src="Images/shieldShuntConnector.jpg" width="50%"></p>
+
+6. Mount the Arduino shield to the robot body.
+    * You will needs 4 short screws. The screws will tap directly into the plastic, so do not over tighten them.
     * The screw terminals and JST connector should face the center of the robot body.
 
     <p><img src="Images/shieldMounting.jpg" width="50%"></p>
 
-6. Stack the Arduino on top of the Arduino shield.
+7. Stack the Arduino on top of the Arduino shield.
     * The header pins should line up, with the micro USB port facing the edge of the robot.
 
     <p><img src="Images/arduinoMounting.jpg" width="50%"></p>
 
-7. Wire up the motors using the included Dynamixel cables.
+8. Wire up the motors using the included Dynamixel cables.
     * The motors should be daisy-chained to each other in series, with the Arduino shield as one end of the chain.
     * A suggested ordering is: Arduino Shield -> Motor 6 -> Motor 5 -> Motor 4 -> Motor 1 -> Motor 2 -> Motor 3.
     * Use either the included wire wraps or zip ties to manage the wires, as pictured.
 
     <p><img src="Images/motorWiring.jpg" width="50%"></p>
 
-8. Attach the 5V UBEC to the JST connector.
+9. Attach the 5V UBEC to the JST connector.
     * The JST connector is not reversible, so it will only connect if oriented correctly (red to red, black to black).
 
     <p><img src="Images/voltageRegulator.jpg" width="50%"></p>
 
-9. Thread the Velcro straps through the slits in the robot body.
+10. Thread the Velcro straps through the slits in the robot body.
     * Ensure the ends of each strap come out on top of the robot body for ease of access.
 
     <p><img src="Images/velcroStraps.jpg" width="50%"></p>
 
-10. Align each servo horn.
+11. Align each servo horn.
     * Each servo horn has 3 small circular indents forming a triangle. Rotate the motor by hand until the circle closest to a screw mounting hole is at the top.
 
     <p><img src="Images/motorHubAlignment.jpg" width="50%"></p>
 
-11. Mount a quick-connect hub to each servo horn (quick-connect leg users only).
+12. Mount a quick-connect hub to each servo horn (quick-connect leg users only).
     * Each quick-connect hub requires 3 long screws. The screws will tap directly into the motor's plastic, so do not over tighten them.
     * Ensure that the opening in the hub faces upwards, and the little notch in the hub is on the side closer to the front of the robot (the side without the Arduino).
 
     <p><img src="Images/quickConnectHubMounting.jpg" width="50%"></p>
 
-12. Mount a leg to each servo horn.
+13. Mount a leg to each servo horn.
     * Quick-connect legs require 1 additional long screw, while standard legs require 4 long screws. The screws will tap directly into the motor's plastic, so do not over tighten them.
     * The middle legs extend out further from the robot, to prevent collisions between neighboring legs.
     * Ensure that the curved side of each leg faces the rear of the robot (the side with the Arduino) and the end of the leg is directly below the robot (with the servo horn aligned as in step 10), as pictured for both leg types.
