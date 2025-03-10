@@ -1,22 +1,20 @@
 #ifndef gait_parameters
 #define gait_parameters
 
-typedef struct gait_container Gait;
-
-struct gait_container{
-  float theta_s[7];
-  float theta_d[7];
-  int t_cc[7];
-  float duty_f[7];
-  float phases[7];
-  float kp;
-  float kd;
+struct Gait {
+  float sweep[7]; // Sweep angle (degrees)
+  float down[7];  // Down angle (degrees)
+  int period[7];  // Period (milliseconds)
+  float duty[7];  // Duty factor
+  float phase[7]; // Phase offset
+  bool pronk;     // Avoid recirculating leg
+  float kp;       // Proportional gain (deg/ms^2)
+  float kd;       // Derivative gain (deg/ms)
 };
 
-extern int active_mini;
-extern int initial_gait;
+// Update gaits with the latest parameter values
+void updateGaitParams(Gait & gait);
+
 extern Gait walk_gait;
-extern Gait pronk_gait;
-extern Gait run_gait;
 
 #endif

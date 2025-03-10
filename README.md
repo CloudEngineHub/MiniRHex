@@ -18,8 +18,8 @@ Assembly Instructions are available at [Assembly Instructions](Assembly).
 ## Install Software
 1. Install the Arduino IDE from https://www.arduino.cc/en/software
 2. Open the Arduino IDE and under "Tools" select "Manage Libraries..."
-   - Type "DynamixelShield" into the search bar
-   - Select "Install" for the DynamixelShield library
+   - Type "DynamixelShield" into the search bar and select "Install" for the DynamixelShield library
+   - Repeat for the WiFiNINA and FlashStorage_SAMD libraries
 3. Under "Tools" hover over "Board" and select "Boards Manager..."
    - Type "Arduino SAMD Boards" into the search bar
    - Select "Install" for the Arduino SAMD Boards (32-bits ARM Cortex-M0+)
@@ -88,8 +88,8 @@ MiniRHex was designed by the following people in the [Robomechanics Lab](https:/
 * Monica Barragan (BS ME '19)
 * Cameron Selby (MS ME '18)
 * Scott Phillips (BS ME '20)
-* J. Joe Payne (Ph.D ME)
+* J. Joe Payne (Ph.D ME '24)
 * Joe Norby (Ph.D ME '22)
 * Catherine Pavlov (Ph.D ME '23)
-* Paul Nadan (Ph.D RI)
+* Paul Nadan (Ph.D RI '25)
 * Aaron Johnson (Advisor)

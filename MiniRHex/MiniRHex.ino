@@ -1,8 +1,8 @@
 #include "leg_info.h"
-#include "control_parameters.h"
 #include "desired_values.h"
 #include "pd_control.h"
 #include "gait_parameters.h"
+#include "param_storage.h"
 
 #include <DynamixelShield.h>
 #include <WiFiNINA.h>
@@ -20,23 +20,23 @@ float desired_vel;
 float desired_theta;
 float actual_vel;
 float actual_theta;
+float kp;
+float kd;
 float control_signal;
-float actual_p;
 
 // Legs setup
 const int legs_active = 6;
 
 // Motor values
-float present_velocity[legs_active+1];
-float present_position[legs_active+1];
-float goal_velocity[legs_active+1];
+float present_velocity[legs_active + 1];
+float present_position[legs_active + 1];
+float goal_velocity[legs_active + 1];
 
-// Battery status
+// Status
 bool flash;         // LED on or off
 bool shutdown;      // Disable motor movement
-int voltage;        // Current battery voltage
-int voltage_check;  // Current motor voltage
-
+int voltage;        // Battery voltage
+int voltage_check;  // Motor voltage
 bool wifi;          // WiFi connection active
 
 void setup() {
@@ -45,13 +45,16 @@ void setup() {
   dxl.setPortProtocolVersion(2.0);                 // XL330 motors use protocol 2
   
   pinMode(LED_BUILTIN, OUTPUT);                    // setup LED
+  loadParams();                                    // load parameters from flash memory
+  updateGaitParams(walk_gait);                     // update walk gait with loaded parameters
   int t_start = millis();
   for (int i = 1; i <= legs_active; i++) {         // legs stored at their index
     dxl.torqueOff(legs[i].id);
     dxl.setOperatingMode(legs[i].id, OP_VELOCITY); // change servo to wheel mode
     dxl.writeControlTableItem(RETURN_DELAY_TIME, legs[i].id, 0);
+    dxl.writeControlTableItem(VELOCITY_P_GAIN, legs[i].id, 40);
     dxl.torqueOn(legs[i].id);
-    update_gait(i, initial_gait, t_start);         // set initial parameters, initial_gait in gait_parameters
+    update_gait(i, STAND, t_start);                // set initial gait parameters for each leg
   }
 
   sync_write_param.id_count = legs_active;         // set sync read/write motor IDs
@@ -181,12 +184,6 @@ void loop() {
       case 'd': // right
         gait = RIGHT;
         break;
-      case 'e': // pronk
-        gait = PRONK;
-        break;
-      case 'r': // run
-        gait = RUN;
-        break;
       case 'x': // prepare jump
         jump_ready();
         break;
@@ -206,48 +203,33 @@ void loop() {
     }
   }
 
-  // primary for-loop
+  // Compute leg velocities
   sync_read_position();
   sync_read_velocity();
   for (int i = 1; i <= legs_active; i++) {
-    actual_theta = present_position[i]; // degrees
-    actual_vel = present_velocity[i];   // degrees/millisecond
-    if (!legs[i].deadzone) {
-      if (legs[i].gait == STAND) { // standing or sitting
-        if (legs[i].right_side) {
-          desired_theta = -legs[i].desired_theta;
-        }
-        else {
-          desired_theta = legs[i].desired_theta;
-        }
-        actual_theta = actual_theta - legs[i].zero; // zero out leg thetas, accounts for small servo irregularities
-        control_signal = pd_controller(actual_theta, desired_theta, actual_vel, 0, kp_hold, kd_hold);
-      } else if (legs[i].gait == RUN){
-        float v = 20;
-        control_signal = v*(-legs[i].right_side*2+1) - actual_vel;
-      }
-      else { // walking, turning
-        // compute absolute desired values (theta and velocity) from clock time
-        vals v = get_desired_vals(millis(), legs[i]);
-        // translate theta and v to relative (left and right)
-        if (legs[i].right_side) {
-          desired_vel = -v.global_velocity; // relative
-          desired_theta = -v.global_theta; // relative
-        }
-        else { // left side, relative is same as global
-          desired_vel = v.global_velocity;
-          desired_theta = v.global_theta;
-        }
-        actual_theta = actual_theta - legs[i].zero;
-
-        control_signal = pd_controller(actual_theta, desired_theta, actual_vel, desired_vel, legs[i].kp, legs[i].kd);
-      }
-      float new_vel = actual_vel + control_signal;
-      if (shutdown) {
-        goal_velocity[i] = 0;
-      } else {
-        goal_velocity[i] = new_vel;
-      }
+    actual_theta = present_position[i] - legs[i].zero;  // degrees
+    actual_vel = present_velocity[i];                   // degrees/millisecond
+    if (legs[i].gait == STAND) { // standing or sitting
+      desired_theta = legs[i].desired_theta;
+      desired_vel = 0;
+      kp = params.kp_stand;
+      kd = params.kd_stand;
+    } else { // walking, turning
+      Vals v = get_desired_vals(millis(), legs[i]);
+      desired_theta = v.global_theta;
+      desired_vel = v.global_velocity;
+      kp = legs[i].kp;
+      kd = legs[i].kd;
+    }
+    if (legs[i].right_side) {
+      desired_theta *= -1;
+      desired_vel *= -1;
+    }
+    control_signal = pd_controller(actual_theta, desired_theta, actual_vel, desired_vel, kp, kd);
+    if (shutdown) {
+      goal_velocity[i] = 0;
+    } else {
+      goal_velocity[i] = actual_vel + control_signal;
     }
   }
   sync_write_velocity();

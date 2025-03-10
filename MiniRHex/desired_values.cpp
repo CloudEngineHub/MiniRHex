@@ -1,13 +1,11 @@
-
-#include "control_parameters.h"
 #include "desired_values.h"
 #include <math.h>
 #include <fstream>
 
-vals get_desired_vals_internal(int t, leg l){
-  //assume t has been adjusted for phasing
+Vals get_desired_vals_internal(int t, Leg l){
+  // Assume t has been adjusted for phasing
 
-  int forward = l.forwards[l.gait - 1]; //standing is 0: -1 shifts to account for zero indexing
+  int sign = l.sign[l.gait];
   float theta;
   float velocity;
 
@@ -28,19 +26,16 @@ vals get_desired_vals_internal(int t, leg l){
     velocity = l.recovery_speed;
   }
 
-  if (theta < theta_up - theta_circle) theta = theta_circle + theta;
-  else if (theta >= theta_up) theta = -theta_circle + theta; //wrap thetas
-  theta = theta * forward;
-  velocity = velocity * forward;
-  vals result = {theta, velocity};
+  theta = fmod(theta + 180.0, 360.0) - 180.0; // wrap thetas
+  theta = theta * sign;
+  velocity = velocity * sign;
+  Vals result = {theta, velocity};
   return result;
 }
 
-vals get_desired_vals(int t, leg l){ //handles phasing and start time, user provides get desired vals internal function
+Vals get_desired_vals(int t, Leg l) {
+  // Handles phasing and start time
   int elapsed_time = t - l.startMillis;
-
-  float phase = l.phase;
-  t = fmodf(elapsed_time + phase * l.t_c, l.t_c);
-  
+  t = fmodf(elapsed_time - l.phase * l.period, l.period);
   return get_desired_vals_internal(t, l);
 }

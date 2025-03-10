@@ -10,6 +10,7 @@ WiFiServer server(80);
 const int RED = 25;
 const int GREEN = 26;
 const int BLUE = 27;
+String gait_pattern = "tripod";
 
 void begin_wifi() {
   WiFiDrv::pinMode(GREEN, OUTPUT);
@@ -67,61 +68,55 @@ char update_wifi() {
         char c = client.read();             // read a byte, then
         if (c == '\n') {                    // if the byte is a newline character
           if (currentLine.length() == 0) {  // empty line is end of http request
-            display_website(client);        // display the webpage
+            display_webpage(client, WEBPAGE);   // display the webpage
             break;
-          } else {
-            currentLine = "";    // clear currentLine
           }
+          if (currentLine.substring(0, 6) == "GET /?") {
+            int first = currentLine.indexOf("?") + 1;
+            int last = currentLine.indexOf(" ", first);
+            String message = currentLine.substring(first, last);
+            if (message.substring(0, 4) == "key=") {
+              output = message[4];
+            } else {
+              parseParams(message);
+              updateGaitParams(walk_gait);
+              for (int i = 1; i <= legs_active; i++) {
+                update_gait(i, legs[i].gait, legs[i].startMillis);
+              }
+            }
+          }
+          currentLine = "";
         }
-        else if (c != '\r') {    // if you got anything else but a carriage return character,
-          currentLine += c;      // add it to the end of the currentLine
-          if (currentLine.substring(currentLine.length() - 6, currentLine.length() - 1) == "GET /") {
-            output = currentLine[currentLine.length() - 1]; // return the command
-          }
+        else if (c != '\r') {
+          currentLine += c;
         }
       }
     }
-    client.stop();                                   // close the connection
+    client.stop();                    // close the connection
   }
-  if (output == ' ') output = 'q';                   // space is also e-stop
+  if (output == ' ') output = 'q';    // space is also e-stop
   return (output);
 }
 
-void display_website(WiFiClient client) {
-  // HTTP headers
+void display_webpage(WiFiClient client, const char * webpage) {
   client.println("HTTP/1.1 200 OK");
   client.println("Content-type:text/html");
-  client.println();
-  client.print("<!doctype html>");
-
-  // Controls
-  client.print("<div class=buttons>");
-  client.print("<b></b><button onclick=\"window.location.href='/r';\">Run<br>(r)</button>");
-  client.print("<b></b><button onclick=\"window.location.href='/z';\">Reboot<br>(z)</button>");
-  client.print("<b></b><button onclick=\"window.location.href='/w';\">Forward<br>(w)</button><b></b><b></b>");
-  client.print("<button onclick=\"window.location.href='/a';\">Left<br>(a)</button>");
-  client.print("<button onclick=\"window.location.href='/q';\">Stop<br>(space)</button>");
-  client.print("<button onclick=\"window.location.href='/d';\">Right<br>(d)</button><b></b>");
-  client.print("<b></b><button onclick=\"window.location.href='/s';\">Reverse<br>(s)</button><b></b><b></b></div>");
-
-  // Style
-  client.print("<style>");
-  client.print(".buttons {display:inline-grid; grid-template-columns: 25% 25% 25% 25%; grid-template-rows: 25% 25% 25% 25%; width: 400px; height: 400px;}");
-  client.print("button {font-size: 12pt; border-width: 4px;}");
-  client.print("@media (max-aspect-ratio: 1) {.buttons {width: 90vw; height: 90vw; padding: 5vw;}");
-  client.print("button {font-size: 4vw; border-width: 0.5vw;}}");
-  client.print("</style>");
-
-  // Key listener
-  client.print("<script>");
-  client.print("document.onkeydown = function(evt) {");
-  client.print("evt = evt || window.event;");
-  client.print("window.location.href = \"/\"+evt.key;");
-  client.print("};");
-  client.print("</script>");
-
-  // Terminate http response
-  client.println();
+  const char *lineStart = webpage;
+  const char *lineEnd = lineStart;
+  char buffer[256];
+  String line;
+  for (int i = 0; i < 1000; ++i) {
+    lineEnd = strchr(lineStart, '\n');
+    size_t lineLength = lineEnd ? (size_t)(lineEnd - lineStart) : strlen(lineStart);
+    lineLength = min(lineLength, sizeof(buffer) - 1);
+    strncpy(buffer, lineStart, lineLength);
+    buffer[lineLength] = '\0';
+    line = String(buffer);
+    subParams(line);
+    client.println(line);
+    if (!lineEnd) break;
+    lineStart = lineEnd + 1;
+  }
 }
 
 String get_ssid() {
